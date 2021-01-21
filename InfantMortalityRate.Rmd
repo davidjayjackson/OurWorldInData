@@ -1,0 +1,52 @@
+---
+title: "Infant Deaths and Mortality Rate"
+author: "David Jackson"
+date: "1/20/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(tidyr)
+library(readr)
+```
+
+## OUr World In Data Child Deaths
+
+```{r}
+child_deaths <- read_csv("./DATA/child-deaths-igme-data.csv") %>% 
+  rename( "under_five" = "Number of under-five deaths")
+
+ 
+```
+```{r}
+deaths_year <- child_deaths %>% group_by(Year) %>% 
+      summarise(Deaths = sum(under_five))
+```
+```{r}
+
+  ggplot(deaths_year) + geom_line(aes(x=Year,y=Deaths)) +
+  labs(title="Total Child Deaths by Year",subtitle = "(Under 5 Years of Age)") +
+    scale_y_continuous(labels=comma)
+```
+###Table of Total Child Deaths by Country
+
+```{r}
+child_deaths %>% filter(Entity !="Total") %>%group_by(Code)  %>%
+            summarize(Deaths = sum(under_five)) %>% arrange(desc(Deaths)) %>%
+  DT::datatable() # formatCurrency('A',currency = "", interval = 3, mark = ",", digits=0)
+```
+### USA Total Child Death by Year
+
+```{r}
+child_deaths %>% filter(Code =="USA") %>% 
+  ggplot(aes(x=Year,y=under_five)) +  geom_line() + 
+  labs(title="US Child Deaths by Year(Under Age 5)", x="Year",y="Total Deaths") +
+  scale_y_continuous(labels=comma)
+```
+
+
+
