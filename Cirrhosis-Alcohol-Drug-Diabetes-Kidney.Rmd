@@ -1,0 +1,115 @@
+---
+title: "World Causes of Death"
+author: "David Jackson"
+date: "1/23/2021"
+output: 
+  html_document: 
+    fig_width: 8
+    fig_height: 6
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(readr)
+library(tidyr)
+library(ggthemes)
+```
+
+## OUr World In Data (http://ourworldindata.org)
+### Cirrhosis, Alcohol, Drug,Diabetes, Kidney
+* Source: https://ourworldindata.org/causes-of-death
+
+
+```{r}
+rm(list=ls())
+
+deaths_causes <- read.csv("./DATA/annual-number-of-deaths-by-cause.csv")
+deaths_causes <- deaths_causes %>% select(Country,Code,Year, Cirrhosis,
+                   Alcohol,Drug, Diabetes, Kidney) %>% na.omit()
+summary(deaths_causes)
+```
+```{r}
+causes_total <- deaths_causes %>% filter(Country !="World") %>% na.omit() %>% group_by(Year) %>%
+  summarise(across(Cirrhosis:Kidney,sum))
+```
+```{r}
+country_total <- deaths_causes %>% filter(Country !="World") %>% na.omit() %>% group_by(Country) %>%
+  summarise(across(Cirrhosis:Kidney,sum))
+```
+
+### Plot of Totals by Cause: Cirrhosis
+
+```{r}
+world_causes <- deaths_causes %>% na.omit() %>% filter(Country =="World")
+```
+```{r}
+ggplot(world_causes) + geom_line(aes(x=Year,y=Cirrhosis)) + 
+  scale_y_continuous(labels=comma) +
+  labs(title = "Worldwide Cirrhosis by Year")
+```
+```{r}
+deaths_causes %>% filter(Code =="USA") %>%
+ggplot() + geom_line(aes(x=Year,y=Cirrhosis)) +
+  scale_y_continuous(labels=comma) +
+  labs(title = "US Cirrhosis  Deaths by Year")
+```
+
+### Plot of Totals by Cause: Alcohol
+
+```{r}
+world_causes <- deaths_causes %>% na.omit() %>% filter(Country =="World")
+```
+```{r}
+ggplot(world_causes) + geom_line(aes(x=Year,y=Alcohol)) + 
+  scale_y_continuous(labels=comma) +
+  labs(title = "Worldwide Alcohol by Year")
+```
+```{r}
+deaths_causes %>% filter(Code =="USA") %>%
+ggplot() + geom_line(aes(x=Year,y=Alcohol)) +
+  scale_y_continuous(labels=comma) +
+  labs(title = "US Alcohol  Deaths by Year")
+```
+
+### Plot Cause by Year
+
+```{r}
+world_pivot <- world_causes %>% pivot_longer(col=Cirrhosis:Kidney)
+```
+
+```{r}
+ggplot(world_pivot) + geom_line(aes(x=Year,y=value)) + facet_wrap(~name) +
+  scale_y_continuous(labels=comma)
+```
+
+```{r}
+ggplot(world_pivot) + geom_line(aes(x=Year,y=value,col=name)) +
+  scale_y_continuous(labels=comma) + ylim(500000,1500000) +
+  labs(title="Worldwide Deaths: 1990 - 2017")
+  
+```
+
+### US Causes : 1990 - 2017
+
+```{r}
+us_causes <- deaths_causes %>% filter(Code =="USA") %>%
+  pivot_longer(col=Cirrhosis:Kidney)
+```
+```{r}
+ggplot(us_causes) + geom_line(aes(x=Year,y=value,col=name)) +
+  scale_y_continuous(labels=comma) +
+  labs(title="US Deaths by Year",y="Total Deaths") +
+  scale_y_log10()
+  
+```
+
+```{r}
+ggplot(us_causes) + geom_area(aes(x=Year,y=value,fill=name)) +
+  scale_y_continuous(labels=comma)  +
+  labs(title="US Deaths by Year",y="Total Deaths") +
+   facet_wrap(~name,scales="free_y",ncol=2)
+  
+```
