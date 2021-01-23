@@ -1,0 +1,98 @@
+---
+title: "World Causes of Deaths"
+author: "David Jackson"
+date: "1/22/2021"
+output: 
+  html_document: 
+    fig_width: 8
+    fig_height: 6
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(readr)
+library(tidyr)
+library(ggthemes)
+```
+
+## Our World In Data: Cuases of Death Worldwide
+
+```{r}
+deaths_causes <- read.csv("./DATA/annual-number-of-deaths-by-cause.csv")
+str(deaths_causes)
+```
+```{r}
+causes_total <- deaths_causes %>% filter(Country !="World") %>% na.omit() %>% group_by(Year) %>%
+  summarise(across(Cirrhosis:Cardio,sum))
+```
+```{r}
+country_total <- deaths_causes %>% filter(Country !="World") %>% na.omit() %>% group_by(Country) %>%
+  summarise(across(Cirrhosis:Cardio,sum))
+```
+
+## Plot of Totals by Cause: HIV/AIDS
+
+```{r}
+world_causes <- deaths_causes %>% na.omit() %>% filter(Country =="World")
+```
+```{r}
+ggplot(world_causes) + geom_line(aes(x=Year,y=HIV.AIDS)) + 
+  scale_y_continuous(labels=comma) +
+  labs(title = "Worldwide HIV/AIDS by Year")
+```
+```{r}
+deaths_causes %>% filter(Code =="USA") %>%
+ggplot() + geom_line(aes(x=Year,y=HIV.AIDS)) + 
+  scale_y_continuous(labels=comma) +
+  labs(title = "US HIV/AIDS  Deaths by Year")
+```
+
+### Plot of Totals Deaths from Alzheimer
+
+```{r}
+ggplot(world_causes) + geom_line(aes(x=Year,y=Alzheimer)) + 
+  scale_y_continuous(labels=comma) +
+  labs(title = "Worldwide Alzheimer Deaths by Year")
+```
+```{r}
+deaths_causes %>% filter(Code =="USA") %>%
+ggplot() + geom_line(aes(x=Year,y=Alzheimer)) + 
+  scale_y_continuous(labels=comma) +
+  labs(title = "US Alzheimer  Deaths by Year")
+```
+
+### Plot of Totals Deaths from Malaria
+
+```{r}
+ggplot(world_causes) + geom_line(aes(x=Year,y=Malaria)) + 
+  scale_y_continuous(labels=comma) +
+  labs(title = "Worldwide Malaria Deaths by Year")
+```
+
+```{r}
+deaths_causes %>% filter(Country =="Sub-Saharan Africa") %>%
+ggplot() + geom_line(aes(x=Year,y=Malaria)) + 
+  scale_y_continuous(labels=comma) +
+  labs(title = " Sub-Saharan Africa Deaths Malaria by Year")
+```
+```{r}
+deaths_causes %>% 
+  filter(Country %in% c("Sub-Saharan Africa","Low SDI","Western Sub-Saharan Africa",
+                        "Low-middle SDI","Nigeria")) %>%
+ggplot() + geom_line(aes(x=Year,y=Malaria,col =Country)) + 
+  scale_y_continuous(labels=comma) +
+  labs(title = "Top 5 Countries with  Malaria Deaths by Year")
+```
+```{r}
+deaths_causes %>% 
+  filter(Country %in% c("Sub-Saharan Africa","Low SDI","Western Sub-Saharan Africa",
+                        "Low-middle SDI","Nigeria","Eastern Sub-Saharan Africa")) %>%
+ggplot() + geom_line(aes(x=Year,y=Malaria)) + 
+  scale_y_continuous(labels=comma) +
+  labs(title = "Top 5 Countries with  Malaria Deaths by Year") + facet_wrap(~Country) 
+   
+```
+
