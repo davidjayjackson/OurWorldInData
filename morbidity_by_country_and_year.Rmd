@@ -1,0 +1,63 @@
+---
+title: "Morbidity Counts By Year"
+author: "David Jackson"
+date: "1/24/2021"
+output: 
+  html_document: 
+    fig_width: 8
+    fig_height: 6
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(tidyr)
+library(readr)
+theme_set(theme_minimal())
+```
+
+### Our World in Data: Morbidity: Burden of Disease
+* mor·bid·i·ty "the condition of suffering from a disease or medical condition."
+
+```{r}
+rm(list=ls())
+df <- read_csv("./DATA/dalys-rate-from-all-causes.csv") 
+summary(df)
+```
+
+### Plot of Total Morbidity by Year
+
+```{r}
+df_year <- df %>% group_by(Year) %>% summarise(Total = sum(Deaths))
+
+```
+```{r}
+ggplot(df_year) + geom_line(aes(x=Year,y=Total)) +
+  scale_y_continuous(labels = comma) +
+  labs(title="Total Deaths by Year")
+```
+```{r}
+df_country <- df %>% group_by(Entity) %>% summarise(Total = sum(Deaths)) %>% 
+   top_n(5) %>% arrange(Total)
+
+    ggplot(df_country) + geom_col(aes(x=Entity,y=Total)) +
+      scale_y_continuous(labels=comma)
+```
+
+### Plot of Top 5 Countries
+
+```{r}
+df_Top5 <- df %>% filter(Entity %in% c("Central African Republic","Rwanda","Malawi","Lesotho","Eswatini"))
+```
+
+```{r}
+ggplot(df_Top5) + geom_line(aes(x=Year,y=Deaths,col=Entity)) +
+    scale_y_log10(labels=comma) + labs(y="Deaths (log10)")
+```
+
+```{r}
+ggplot(df_Top5) + geom_line(aes(x=Year,y=Deaths,col=Entity)) +
+    scale_y_continuous(labels=comma) + facet_wrap(~Entity,ncol=2,scales="free_y")
+```
